@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>看板配置</title>
+		<link rel="stylesheet" href="layui/css/layui.css">
+		<link rel="stylesheet" type="text/css" href="css/config.css" />
+	</head>
+	<body class="layui-layout-body">
+		<div class="layui-layout layui-layout-admin">
+			<div class="layui-header">
+				<div class="layui-logo">看板配置</div>
+				<ul class="layui-nav layui-layout-right">
+					<li class="layui-nav-item">
+						<a id="username" href="javascript:;"></a>
+					</li>
+					<li class="layui-nav-item"><a href="javascript:;" onclick="logout()">退出</a></li>
+				</ul>
+			</div>
+
+			<div class="layui-side layui-bg-black">
+				<div class="layui-side-scroll">
+					<ul class="layui-nav layui-nav-tree">
+						<li class="layui-nav-item"><a href="javascript:;" onclick="showThis('board.html')">看板设置</a></li>
+						<li class="layui-nav-item"><a href="javascript:;" onclick="showThis('boardset.html')">看板组设置</a></li>
+						<li class="layui-nav-item"><a href="javascript:;" onclick="showThis('user.html')">用户关联</a></li>
+						<li class="layui-nav-item"><a href="javascript:;" onclick="showThis('role.html')">角色关联</a></li>
+						<li class="layui-nav-item"><a href="javascript:;" onclick="showThis('data.html')">SQL数据源</a></li>
+					</ul>
+				</div>
+			</div>
+
+			<div id="pageContainer">
+				<iframe id="pageFrame" src="" class="pageFrame"></iframe>
+			</div>
+			<div class="layui-footer">
+				© 精工云MES看板配置 ヽ(✿ﾟ▽ﾟ)ノ
+			</div>
+		</div>
+		<script src="js/jquery-3.3.1.min.js"></script>
+		<script src="layui/layui.js"></script>
+		<script src="js/app.js"></script>
+		<script src="js/login.js"></script>
+		<script>
+			window.logout = function() {
+				storage.setItem("user", '')
+				window.location.href = './login.html'
+			}
+			
+			window.showThis = function(url) {
+				var pathArray = window.location.href.split('/')
+				var toUrl = ''
+				for (var x = 0; x < pathArray.length - 1; x++) {
+					toUrl += pathArray[x] + '//'
+				}
+				toUrl += url
+				$('#pageFrame').attr('src', toUrl)
+			}			
+		</script>
+	</body>
+</html>

@@ -1,0 +1,21 @@
+*{
+	margin: 0;
+	padding: 0;
+}
+
+.my-subpage{
+	padding: 15px 15px;
+}
+
+#searchHeader{
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.my-edit{
+	background-color: #f7f7f7;
+	font-size: 16px;
+	height: 400px;
+}

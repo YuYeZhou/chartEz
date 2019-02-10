@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" href="layui/css/layui.css">
+		<link rel="stylesheet" type="text/css" href="css/app.css" />
+	</head>
+	<style>
+		.rightText{
+		    position: absolute;
+            right: 10px;
+		}
+	</style>
+	<body style="padding-left: 40px; padding-top:50px">
+		<form id="searchForm" class="layui-form" onsubmit="return false;">
+			<div class="layui-form-item">
+				<label class="layui-form-label">看板组名称</label>
+				<div class="layui-input-inline" style="width: 180px ! important;" >
+					<input id="keywords" type="text" placeholder="请输入看板组名称" autocomplete="off" class="layui-input" style="margin-right: 20px;">
+				</div>      						
+				<div class="layui-input-inline" style="width:60px ! important;margin-left:20px">
+					<button class="layui-btn" id="search_btn">搜索</button>
+				</div>
+				<div class="rightText" style="width:60px ! important">
+					<button id="addBtn" class="layui-btn"  onclick="updateThis('')">新增</button>
+				</div>			
+			</div>
+		</form>
+		
+		<table class="layui-table" style="margin-top: 20px;">
+			<thead>
+				<tr>
+					<th>名称</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody id="data-table">
+			</tbody>
+		</table>
+		<div id="my-page"></div>
+		
+	</body>
+	
+	<script src="js/jquery-3.3.1.min.js"></script>
+	<script src="layui/layui.js"></script>
+	<script src="js/app.js"></script>
+	<script>
+		layui.use(['layer', 'form', 'laypage'], function(layer, form, laypage) {
+			var layer = layer
+			var form = form ;
+			var laypage = laypage
+            var keywords = "";
+			var table = layui.table;
+            var treetable = layui.treetable;	
+            var $ = layui.jquery;
+
+           //查询
+           $("#search_btn").click(function(){
+			   keywords = $('#keywords').val();
+			   initTable();
+			   
+		   });
+
+          //初始化表格
+          var initTable = function(){
+			callAjax('/dbs/page', {keywords:keywords,numPerPage: 10, pageNum: 1}, function(res) {
+				laypage.render({
+					elem: 'my-page',
+					limit: 10,
+					count: res.totalCount,
+					//首次加载不执行jumpTo，避免重复ajax浪费性能
+					jump: function(obj, first) {
+						if (!first) {
+							jumpTo(obj.curr);
+						}
+					},
+					layout: ['prev', 'page', 'next', 'count']
+				})
+				printTable(res.recordList)
+			})
+          }
+		  
+		  initTable();
+		  
+			window.printTable = function(list) {
+				var target = $('#data-table')
+				target[0].innerHTML = '';
+				var html = '';
+				for (var x = 0; x < list.length; x++) {
+					html += '<tr>'
+					html += '<td>' + list[x].name + '</td>'
+					html += '<td><button class="layui-btn layui-btn-normal" onclick="updateThis(\'' + list[x].id +'\')">修改</button>'
+					html += '<button class="layui-btn layui-btn-normal" onclick="delThis(\'' + list[x].id +'\')">删除</button>'
+					html += '<button class="layui-btn layui-btn-normal" onclick="showThis(\'' + list[x].id +'\')">查看</button></td>'
+					html += '</tr>'
+				}
+				target.html(html)
+			}
+
+			window.jumpTo = function(page) {
+				callAjax('/dbs/page', {
+					numPerPage: 10,
+					pageNum: page
+				}, function(res) {
+					printTable(res.recordList);
+				})
+			}
+			
+			window.updateThis = function(id) {
+				var index = layui.layer.open({
+					title : "添加/更新看板组",
+					type : 2,
+					area: ['600px', '100vh'],
+					content : "boardsetUpdate.html?id="+id,
+					success : function(layero, index){
+						setTimeout(function(){
+							layui.layer.tips('点击此处返回列表列表', '.layui-layer-setwin .layui-layer-close', {
+								tips: 3
+							});
+						},500)
+					}
+				})
+				//改变窗口大小时，重置弹窗的高度，防止超出可视区域（如F12调出debug的操作）
+				$(window).resize(function(){
+					layui.layer.full(index);
+				})
+				layui.layer.full(index);
+			}
+			
+			//删除记录
+			window.delThis = function (id) {
+				layui.use('layer', function(){
+				var layer = layui.layer;
+				layer.open({
+					  content: '确定删除该记录？'
+					  ,btn: ['确定', '取消']
+					  ,yes: function(index, layero){
+						layer.close(index); // 关闭信息框
+						callAjax("dbs/delete", {id:id,}, function(data) {
+							layer.msg("删除成功");
+							initTable();
+						});
+					  }
+					 ,btn2: function(index, layero){
+					  }
+					  ,cancel: function(){ 
+					  }
+					});
+				});	
+			}
+
+			window.showThis = function(id) {
+				window.open('./showOne.html?id=' + id, "_blank")
+			}
+		})
+	</script>
+</html>

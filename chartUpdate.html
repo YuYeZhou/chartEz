@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" href="layui/css/layui.css">
+		<link rel="stylesheet" type="text/css" href="css/app.css" />
+		<link rel="stylesheet" type="text/css" href="codemirror-5.43.0/lib/codemirror.css" />
+		<link rel="stylesheet" type="text/css" href="codemirror-5.43.0/theme/bespin.css" />
+	</head>
+	<style type="text/css">
+		.layui-form-item .layui-inline {
+			width: 33.333%;
+			float: left;
+			margin-right: 0;
+		}
+
+		@media(max-width:1240px) {
+			.layui-form-item .layui-inline {
+				width: 100%;
+				float: none;
+			}
+		}
+	</style>
+	<body class="childrenBody">
+		<form class="layui-form" style="width:80%;margin-top:20px;">
+			<input type="hidden" name="id" id="id">
+			<div class="layui-form-item">
+				<label class="layui-form-label">名称</label>
+				<div class="layui-input-block">
+					<input placeholder="名称" class="layui-input" id="name" name="name">
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">样式</label>
+				<div class="layui-input-block">
+					<textarea class="layui-textarea" id="style" name="style"></textarea>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">配置</label>
+				<div class="layui-input-block">
+					<textarea class="layui-textarea" id="config" name="config"></textarea>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">参数内容</label>
+				<div class="layui-input-block">
+					<textarea class="layui-textarea" id="option" name="option"></textarea>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">before</label>
+				<div class="layui-input-block">
+					<textarea class="layui-textarea" id="before" name="before"></textarea>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">after</label>
+				<div class="layui-input-block">
+					<textarea class="layui-textarea" id="after" name="after"></textarea>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">数据源</label>
+				<div class="layui-input-block">
+					<select id="ds_id" name="ds_id"></select>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">回调方法</label>
+				<div class="layui-input-block">
+					<textarea class="layui-textarea" id="call_back" name="call_back"></textarea>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<div class="layui-input-block">
+					<button class="layui-btn" lay-submit="" lay-filter="addChart">立即提交</button>
+				</div>
+			</div>
+		</form>
+	</body>
+	<script src="js/jquery-3.3.1.min.js"></script>
+	<script src="layui/layui.js"></script>
+	<script src="codemirror-5.43.0/lib/codemirror.js"></script>
+	<script src="codemirror-5.43.0/mode/javascript/javascript.js"></script>
+	<script src="js/app.js"></script>
+	<script>
+		var dbid = getQueryString("dbid")
+		var id = getQueryString("id")
+
+		layui.use(['layer', 'form'], function(layer, form) {
+			var layer = layer
+			var form = form
+			//初始化JS编辑器
+			var beforeEditor = CodeMirror.fromTextArea(document.getElementById("before"), {
+				mode: "text/javascript",
+				lineNumbers: true,
+				theme: "bespin"
+			})
+			var afterEditor = CodeMirror.fromTextArea(document.getElementById("after"), {
+				mode: "text/javascript",
+				lineNumbers: true,
+				theme: "bespin"
+			})
+			var styleEditor = CodeMirror.fromTextArea(document.getElementById("style"), {
+				mode: "text/javascript",
+				lineNumbers: true,
+				theme: "bespin"
+			})
+			var optionEditor = CodeMirror.fromTextArea(document.getElementById("option"), {
+				mode: "text/javascript",
+				lineNumbers: true,
+				theme: "bespin"
+			})
+			var callBackEditor = CodeMirror.fromTextArea(document.getElementById("call_back"), {
+				mode: "text/javascript",
+				lineNumbers: true,
+				theme: "bespin"
+			})
+			var configEditor = CodeMirror.fromTextArea(document.getElementById("config"), {
+				mode: "text/javascript",
+				lineNumbers: true,
+				theme: "bespin"
+			})
+
+			//获取并设置数据源
+			callAjax('data/listAll', {}, function(res) {
+				var html = '<option value="">请选择</option>'
+				var target = $('#ds_id')
+				for (var x = 0; x < res.length; x++) {
+					html += '<option value="' + res[x].id + '">' + res[x].sql_name + '</option>'
+				}
+				target.html(html)
+				initPage()
+			})
+
+			function initPage() {
+				if (id) { // 修改
+					callAjax("chart/byid", {id: id}, function(data) {
+						var data = data.data
+						$("#id").val(data.id)
+						$('#name').val(data.name)
+						try {
+							styleEditor.setValue(JSON.stringify(JSON.parse(data.style), null, 2))
+						} catch (e) {
+							styleEditor.setValue('{}')
+						}
+						try {
+							optionEditor.setValue(JSON.stringify(JSON.parse(data.option), null, 2))
+						} catch (e) {
+							optionEditor.setValue('{}')
+						}
+						try {
+							configEditor.setValue(JSON.stringify(JSON.parse(data.config), null, 2))
+						} catch (e) {
+							configEditor.setValue('{}')
+						}
+						beforeEditor.setValue(data.before)
+						afterEditor.setValue(data.after)
+						if (data.call_back) {
+							callBackEditor.setValue(data.call_back)
+						}
+						$("#ds_id").val(data.ds_id)
+						form.render()
+					})
+				} else {
+					styleEditor.setValue('{}')
+					optionEditor.setValue('{}')
+					callBackEditor.setValue("")
+					configEditor.setValue('{}')
+				}
+			}
+
+			form.on("submit(addChart)", function(data) {
+				var params = data.field
+				params.db_id = dbid
+				params.before = beforeEditor.getValue()
+				params.after = afterEditor.getValue()
+				params.call_back = callBackEditor.getValue()
+				var style = toJson(styleEditor.getValue())
+				if (!style) {
+					return false
+				}
+				params.style = style
+				var option = toJson(optionEditor.getValue())
+				if (!option) {
+					return false
+				}
+				params.option = option
+				var config = toJson(configEditor.getValue())
+				if (!config) {
+					return false
+				}
+				params.config = config
+				var url = 'chart/update'
+				callAjax(url, params, function(data) {
+					layer.msg("保存成功");
+					layer.closeAll("iframe")
+					parent.location.reload()
+				});
+				return false;
+			})
+		})
+	</script>
+</html>

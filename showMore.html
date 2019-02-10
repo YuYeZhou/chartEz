@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>看板选择</title>
+		<link rel="stylesheet" href="layui/css/layui.css" media="all">
+	</head>
+	<body>
+		<table class="layui-table">
+			<thead>
+				<tr>
+					<th>看板组Id</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody id="data-table">
+			</tbody>
+		</table>
+	</body>
+	<script src="js/jquery-3.3.1.min.js"></script>
+	<script src="layui/layui.js"></script>
+	<script src="js/app.js"></script>
+	<script type="text/javascript">
+		layui.use(['layer', 'element'], function(layer, element) {
+			var layer = layer
+			var element = element
+			
+			var dbsList = JSON.parse(getQueryString('list'))
+			var html = ''
+			for (var x = 0; x < dbsList.length; x++) {
+				html += '<tr>'
+				html += '<td>' + dbsList[x] + '</td>'
+				html += '<td><button class="layui-btn layui-btn-normal" onclick="showThis(\'' + dbsList[x] + '\')">查看看板</button></td>'
+				html += '</tr>'
+			}
+			
+			$('#data-table').html(html)
+		})
+		
+		window.showThis = function(id) {
+			window.location.href = 'showOne.html?id=' + id
+		}
+	</script>
+</html>
